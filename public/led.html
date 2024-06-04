@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Streaming</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Video Streaming</h1>
+        <form id="upload-form">
+            <input type="text" id="title" name="title" placeholder="Video Title" required>
+            <input type="text" id="url" name="url" placeholder="Video URL" required>
+            <button type="submit">Upload</button>
+        </form>
+        <div id="video-container"></div>
+        <div id="layout-container">
+            <h2>Layouts</h2>
+            <div id="layouts">
+                <!-- Selected layouts will appear here -->
+            </div>
+                <!-- Selected videos will appear here -->
+        </div>
+    </div>
+    <div class="container">
+        <!-- Other HTML content -->
+        <div id="play-box-container"></div>
+    </div>
+    
+    <script>
+        let selectedVideos = {};
+
+        document.getElementById('upload-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById('title').value;
+            const url = document.getElementById('url').value;
+
+            const response = await fetch('http://localhost:3000/videos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ title, url }),
+            });
+
+            if (response.ok) {
+                loadVideos();
+            }
+        });
+
+        async function loadVideos() {
+            const response = await fetch('http://localhost:3000/videos');
+            const videos = await response.json();
+
+            const videoContainer = document.getElementById('video-container');
+            videoContainer.innerHTML = '';
+
+            videos.forEach(video => {
+                const videoElement = document.createElement('video');
+                videoElement.src = video.url;
+                videoElement.controls = true;
+                videoElement.dataset.id = video.id; // Add video ID to the dataset
+
+                const titleElement = document.createElement('h2');
+                titleElement.innerText = video.title;
+
+                const videoWrapper = document.createElement('div');
+                videoWrapper.appendChild(titleElement);
+                videoWrapper.appendChild(videoElement);
+
+                videoContainer.appendChild(videoWrapper);
+            });
+
+            loadSelectedLayouts();
+        }
+
+        // Load selected videos from local storage
+        if (localStorage.getItem('selectedVideos')) {
+            selectedVideos = JSON.parse(localStorage.getItem('selectedVideos'));
+            updateSelectedVideosContainer();
+        }
+
+        async function selectLayout(videoId, layout) {
+            // Toggle selection
+            if (selectedVideos[videoId]) {
+                delete selectedVideos[videoId];
+            } else {
+                selectedVideos[videoId] = layout;
+            }
+
+            // Update local storage
+            localStorage.setItem('selectedVideos', JSON.stringify(selectedVideos));
+
+            // Update the layout containers
+            updateSelectedVideosContainer();
+            loadSelectedLayouts();
+        }
+
+        function updateSelectedVideosContainer() {
+            const selectedVideosContainer = document.getElementById('selected-videos-container');
+            selectedVideosContainer.innerHTML = '';
+
+            Object.entries(selectedVideos).forEach(([id, layout]) => {
+                const videoContainer = document.createElement('div');
+                videoContainer.id = `layout-${layout}-${id}`;
+                selectedVideosContainer.appendChild(videoContainer);
+                loadVideo(id, videoContainer);
+            });
+        }
+
+        async function loadVideo(videoId, container) {
+            const response = await fetch(`http://localhost:3000/videos/${videoId}`);
+            const video = await response.json();
+
+            const selectedVideoElement = document.createElement('video');
+            selectedVideoElement.src = video.url;
+            selectedVideoElement.controls = true;
+            selectedVideoElement.autoplay = true; // Autoplay the video
+
+            container.innerHTML = ''; // Clear previous video
+            container.appendChild(selectedVideoElement);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load selected videos from local storage
+            if (localStorage.getItem('selectedVideos')) {
+                selectedVideos = JSON.parse(localStorage.getItem('selectedVideos'));
+                updateSelectedVideosContainer();
+            }
+
+            // Add click event listener to each layout
+            Object.keys(selectedVideos).forEach((videoId) => {
+                const layoutId = selectedVideos[videoId];
+                const layout = document.getElementById(layoutId);
+                layout.addEventListener('click', () => playSelectedVideo(videoId));
+            });
+
+            // Add click event listener to show-video button
+            document.querySelector('.show-video').addEventListener('click', showSelectedVideo);
+        });
+
+        async function playSelectedVideo(videoId) {
+            const container = document.getElementById('play-box-container');
+            const response = await fetch(`http://localhost:3000/videos/${videoId}`);
+            const video = await response.json();
+
+            container.innerHTML = ''; // Clear previous video
+            const selectedVideoElement = document.createElement('video');
+            selectedVideoElement.src = video.url;
+            selectedVideoElement.controls = true;
+            selectedVideoElement.autoplay = true; // Autoplay the video
+            container.appendChild(selectedVideoElement);
+        }
+
+        async function showSelectedVideo() {
+            const selectedVideoId = Object.keys(selectedVideos)[0]; // Assuming you want to get the first selected video
+
+            if (selectedVideoId) {
+                const response = await fetch(`http://localhost:3000/videos/${selectedVideoId}`);
+                const video = await response.json();
+
+                const videoElement = document.createElement('video');
+                videoElement.src = video.url;
+                videoElement.controls = true;
+
+                const videoContainer = document.getElementById('video-container');
+                videoContainer.innerHTML = '';
+                videoContainer.appendChild(videoElement);
+            } else {
+                alert('No video selected');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const selectedVideoId = localStorage.getItem('selectedVideoId');
+            if (selectedVideoId) {
+                // Use the selected video ID as needed
+                console.log('Selected Video ID:', selectedVideoId);
+            }
+        });
+
+        loadVideos();
+
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

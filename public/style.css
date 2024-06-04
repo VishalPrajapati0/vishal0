@@ -1,0 +1,95 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .container {
+    width: 80%;
+    margin: auto;
+    overflow: hidden;
+  }
+  
+  h1 {
+    text-align: center;
+    margin: 20px 0;
+  }
+  
+  form {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  input[type="text"] {
+    padding: 10px;
+    width: 200px;
+  }
+  
+  button {
+    padding: 10px 20px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+  }
+  
+  #video-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  video {
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 20px;
+  }
+  
+
+
+  /* lay out*/
+
+  /* Styling for layout containers */
+#layout-container {
+    margin-top: 20px;
+}
+
+#layouts {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 0px;
+    gap: 20px;
+
+    position: absolute;
+    width: 150px;
+    height: 152px;
+    left: 345px;
+    top: 733px; 
+}
+
+#layouts > div {
+    flex: 0 0 calc(33.33% - 20px); /* Three columns with 20px gap */
+    max-width: calc(33.33% - 20px); /* Three columns with 20px gap */
+}
+
+#selected-videos-container {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+#selected-videos-container > div {
+    flex: 0 0 calc(25% - 20px); /* Four columns with 20px gap */
+    max-width: calc(25% - 20px); /* Four columns with 20px gap */
+}
+
+
+/* Add this CSS to your style.css file */
+#upload-form button[type="submit"] {
+    cursor: pointer; /* Set cursor to pointer when hovering over the upload button */
+}

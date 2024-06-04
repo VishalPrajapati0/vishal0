@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Streaming</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Video Streaming</h1>
+        <form id="upload-form" action="http://192.168.1.68:3000/videos" method="post">
+            <input type="text" id="title" name="title" placeholder="Video Title" required>
+            <input type="text" id="url" name="url" placeholder="Video URL" required>
+            <button type="submit">Upload</button>
+        </form>
+        <div id="video-container"></div>
+        <div id="layout-container">
+            <h2>Layouts</h2>
+            <div id="layouts">
+                <!-- Selected layouts will appear here -->
+            </div>
+            <div id="selected-videos-container">
+                <!-- Selected videos will appear here -->
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <!-- Other HTML content -->
+        <div id="play-box-container"></div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+       async function fetchAndDisplayVideos() {
+    const response = await fetch('http://192.168.1.68:3000/videos');
+    const videos = await response.json();
+
+    const videoContainer = document.getElementById('video-container');
+    videoContainer.innerHTML = '';
+
+    videos.forEach(video => {
+        videoContainer.innerHTML += `
+            <div class="video-item" data-url="${video.url}">
+                <h3>${video.title}</h3>
+                <video width="320" height="240" controls>
+                    <source src="${video.url}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        `;
+    });
+
+    // Add event listeners to each video item to move it to the layout container when clicked
+    const videoItems = document.querySelectorAll('.video-item');
+    videoItems.forEach(videoItem => {
+        videoItem.addEventListener('click', () => {
+            const url = videoItem.getAttribute('data-url');
+            const layoutContainer = document.getElementById('selected-videos-container');
+            layoutContainer.innerHTML += `
+                <video width="320" height="240" controls>
+                    <source src="${url}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            `;
+        });
+    });
+}
+
+document.getElementById('upload-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const title = document.getElementById('title').value;
+    const url = document.getElementById('url').value;
+
+    try {
+        const response = await fetch('http://192.168.1.68:3000/videos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ title, url }),
+        });
+
+        if (response.ok) {
+            // Video uploaded successfully
+            console.log('Video uploaded successfully');
+            await fetchAndDisplayVideos(); // Fetch and display all videos
+        } else {
+            // Handle error response
+            console.error('Failed to upload video');
+        }
+    } catch (error) {
+        // Handle network or other errors
+        console.error('An error occurred:', error);
+    }
+});
+
+// Initial fetch and display of videos
+fetchAndDisplayVideos();
+
+    </script>
+</body>
+
+</html>
